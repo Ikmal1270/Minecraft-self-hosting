@@ -202,7 +202,7 @@ async function install({ type, mcVersion, serverDir, javaPath, previousLaunch, o
       await downloadFile(url, installerPath, progress(`Downloading ${LOADERS[type].label} installer`));
 
       onProgress?.({ percent: -1, label: `Installing ${LOADERS[type].label} ${loaderVersion} (this can take a few minutes)...` });
-      onLog?.(`[DIY MC Hosting] Running ${LOADERS[type].label} installer...\n`);
+      onLog?.(`[SpareBlok] Running ${LOADERS[type].label} installer...\n`);
       const res = await run(javaPath, ['-jar', installerPath, '--installServer'], {
         cwd: serverDir,
         timeout: 15 * 60 * 1000,

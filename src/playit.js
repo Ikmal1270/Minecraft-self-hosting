@@ -1,8 +1,8 @@
 // playit.gg tunnel: lets friends join over the internet without port forwarding,
 // even behind CGNAT (mobile/5G broadband). Flow:
 //   1. download the signed playitd agent (portable, no admin, no service)
-//   2. link: user approves DIY MC Hosting in the browser (claim code -> secret key)
-//   3. run playitd with DIY MC Hosting's own secret file
+//   2. link: user approves SpareBlok in the browser (claim code -> secret key)
+//   3. run playitd with SpareBlok's own secret file
 //   4. create a "minecraft-java" tunnel to 127.0.0.1:<port> and report its address
 const { EventEmitter } = require('events');
 const { spawn } = require('child_process');
@@ -121,7 +121,7 @@ class PlayitManager extends EventEmitter {
     const url = `https://playit.gg/claim/${code}`;
     const claim = { code, cancelled: false };
     this.claim = claim;
-    this.setState({ phase: 'linking', claimUrl: url, message: 'Waiting for you to approve DIY MC Hosting in the browser...' });
+    this.setState({ phase: 'linking', claimUrl: url, message: 'Waiting for you to approve SpareBlok in the browser...' });
 
     const done = (async () => {
       const deadline = Date.now() + CLAIM_TIMEOUT_MS;
@@ -129,7 +129,7 @@ class PlayitManager extends EventEmitter {
         let setup;
         try {
           setup = await this.api('/claim/setup', {
-            code, agent_type: 'self-managed', version: `DIY MC Hosting ${this.appVersion}`,
+            code, agent_type: 'self-managed', version: `SpareBlok ${this.appVersion}`,
           }, false);
         } catch (e) {
           if (e.code === 'CodeExpired' || e.code === 'InvalidCode') throw new PlayitError('The link expired. Press Link again.');
@@ -175,7 +175,7 @@ class PlayitManager extends EventEmitter {
       this.setState({ phase: 'creating', message: 'Creating your Minecraft tunnel...' });
       try {
         await this.api('/tunnels/create', {
-          name: 'DIY MC Hosting Minecraft',
+          name: 'SpareBlok Minecraft',
           tunnel_type: 'minecraft-java',
           port_type: 'tcp',
           port_count: 1,

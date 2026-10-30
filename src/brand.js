@@ -1,6 +1,6 @@
 // Product identity in one place so a rename never misses a spot.
-const APP_NAME = 'DIY MC Hosting By M.N.Ikmal';
-const SHORT_NAME = 'DIY MC Hosting';
+const APP_NAME = 'SpareBlok';
+const SHORT_NAME = 'SpareBlok';
 const AUTHOR = 'M.N.Ikmal';
 const LOG_PREFIX = `[${SHORT_NAME}]`;
 
@@ -15,7 +15,7 @@ const LEGACY_DEFAULT_MOTDS = [
   'A Minecraft Server hosted with MCHost',
   'A Minecraft Server hosted with DIY MC Hosting',
 ];
-const DEFAULT_MOTD_PATTERN = /^Thanks for using DIY MC Hosting and just a reminder this system version \S+ is still under early development ~ M\.N\.Ikmal$/;
+const DEFAULT_MOTD_PATTERN = /^Thanks for using (?:DIY MC Hosting|SpareBlok) and just a reminder this system version \S+ is still under early development ~ M\.N\.Ikmal$/;
 
 function isDefaultMotd(motd) {
   return !motd || LEGACY_DEFAULT_MOTDS.includes(motd) || DEFAULT_MOTD_PATTERN.test(motd);

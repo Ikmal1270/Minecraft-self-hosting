@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="assets/icon.png" alt="DIY MC Hosting icon" width="112">
+  <img src="assets/icon.png" alt="SpareBlok icon" width="112">
 </p>
 
-<h1 align="center">DIY MC Hosting</h1>
+<h1 align="center">SpareBlok</h1>
 
 <p align="center">
   <strong>Turn an old PC into a Minecraft server, without touching Java or the command line.</strong><br>
-  A free, open-source Windows app that installs, tunes, and runs a Minecraft Java server for you.
+  A free, open-source Windows app by M.N.Ikmal that installs, tunes, and runs a Minecraft Java server for you.
 </p>
 
 <p align="center">
@@ -40,8 +40,8 @@
 
 | Download | Best for | Size |
 |----------|----------|------|
-| `DIY-MC-Hosting-Setup-<version>.exe` | Most people. Adds Start menu and desktop shortcuts, no admin rights needed | about 120 MB |
-| `DIY-MC-Hosting-Portable-<version>.exe` | Running without installing | about 110 MB |
+| `SpareBlok-Setup-<version>.exe` | Most people. Adds Start menu and desktop shortcuts, no admin rights needed | about 120 MB |
+| `SpareBlok-Portable-<version>.exe` | Running without installing | about 110 MB |
 
 > [!NOTE]
 > **Windows may show "Windows protected your PC".** The app isn't code-signed yet, and SmartScreen warns about unsigned apps from new publishers. Check the file first ([how to verify it](#verify-your-download)), then choose **More info → Run anyway**.
@@ -193,7 +193,7 @@ You're being asked to run an app on your PC, so here's exactly what it does. The
 
 Every player who joins gets this private chat message, which can't currently be turned off:
 
-> *Thanks for using DIY MC Hosting and just a reminder this system version \<version\> is still under early development ~ M.N.Ikmal*
+> *Thanks for using SpareBlok and just a reminder this system version \<version\> is still under early development ~ M.N.Ikmal*
 
 The same text is the default server-list MOTD, and you can change that one in the settings.
 
@@ -202,7 +202,7 @@ The same text is the default server-list MOTD, and you can change that one in th
 Compare your file's hash with the SHA-256 listed in the [release notes](https://github.com/Ikmal1270/Minecraft-self-hosting/releases/latest). Run this in PowerShell, using the name of the file you downloaded:
 
 ```powershell
-Get-FileHash .\DIY-MC-Hosting-Setup-1.3.0.exe -Algorithm SHA256
+Get-FileHash .\SpareBlok-Setup-1.3.0.exe -Algorithm SHA256
 ```
 
 If the hashes don't match, don't run the file. You can also scan it on [VirusTotal](https://www.virustotal.com/) or [build it yourself](#build-from-source).
@@ -290,4 +290,4 @@ docs/screenshots/  Images used in this README
 
 [MIT](LICENSE) © 2026 M.N.Ikmal
 
-*DIY MC Hosting is not an official Minecraft product and is not approved by or associated with Mojang or Microsoft.*
+*SpareBlok is not an official Minecraft product and is not approved by or associated with Mojang or Microsoft.*

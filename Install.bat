@@ -1,5 +1,5 @@
 @echo off
-title DIY MC Hosting Installer
+title SpareBlok Installer
 
 if not exist "%~dp0scripts\install.ps1" (
   echo.

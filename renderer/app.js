@@ -1,5 +1,5 @@
 // ================================================
-// DIY MC Hosting - Minecraft Server Manager
+// SpareBlok - Minecraft Server Manager
 // Renderer Process Application Logic
 // ================================================
 
@@ -22,7 +22,7 @@ let perfDirty = false;
 let lanAddress = '';
 let publicIp = '';
 let lastStats = null;
-let brandInfo = { appName: 'DIY MC Hosting By M.N.Ikmal', shortName: 'DIY MC Hosting', version: '' };
+let brandInfo = { appName: 'SpareBlok', shortName: 'SpareBlok', version: '' };
 let playitState = { phase: 'off' };
 let playitEnabled = false;
 const chartData = { cpu: [], ram: [] };
@@ -894,7 +894,7 @@ async function chooseServerDirectory() {
   const dir = await mchost.selectDirectory();
   if (!dir) return;
   const ok = await confirmDialog('Change server folder?',
-    `DIY MC Hosting will use <code>${escapeHtml(dir)}</code>. If that folder already contains a server, re-install the matching software/version on this page so DIY MC Hosting knows how to start it.`,
+    `SpareBlok will use <code>${escapeHtml(dir)}</code>. If that folder already contains a server, re-install the matching software/version on this page so SpareBlok knows how to start it.`,
     'Use this folder');
   if (!ok) return;
   currentConfig = await mchost.saveConfig({ serverDirectory: dir, launch: null, installedType: '', installedVersion: '' });
@@ -1115,7 +1115,7 @@ async function installRecommended() {
 function classifyLine(line) {
   if (/\b(WARN|WARNING)\b/.test(line)) return 'warn';
   if (/\b(ERROR|SEVERE|FATAL)\b|Exception/.test(line)) return 'error';
-  if (/^\[DIY MC Hosting\]/.test(line)) return 'mchost';
+  if (/^\[SpareBlok\]/.test(line)) return 'mchost';
   if (/Done \(|joined the game/.test(line)) return 'success';
   if (/\bINFO\b/.test(line)) return 'info';
   return '';
@@ -1472,7 +1472,7 @@ async function openFileEditor(filePath) {
   const saved = await showModal({
     title: `<i class="fas fa-file-code"></i> ${escapeHtml(filePath)}`,
     wide: true,
-    body: `${isProps ? '<div class="tip tip-warning"><i class="fas fa-exclamation-triangle"></i><span>Settings managed by DIY MC Hosting (port, MOTD, distances...) are overwritten on start. Change those in the app instead.</span></div>' : ''}
+    body: `${isProps ? '<div class="tip tip-warning"><i class="fas fa-exclamation-triangle"></i><span>Settings managed by SpareBlok (port, MOTD, distances...) are overwritten on start. Change those in the app instead.</span></div>' : ''}
       <textarea class="form-textarea monospace file-editor" id="fileEditorText" spellcheck="false" ${readOnly ? 'readonly' : ''}></textarea>`,
     onOpen: () => { document.getElementById('fileEditorText').value = res.content; },
     actions: readOnly
@@ -1688,7 +1688,7 @@ function renderPlayit(s) {
       </div>`;
   } else if (phase === 'linking') {
     html = `
-      <div class="tunnel-status"><span class="loading-spinner" aria-hidden="true"></span><span class="msg"><strong>Approve DIY MC Hosting in your browser.</strong> A playit.gg page opened. Sign in or continue as a guest, then press Approve. This page updates by itself.</span></div>
+      <div class="tunnel-status"><span class="loading-spinner" aria-hidden="true"></span><span class="msg"><strong>Approve SpareBlok in your browser.</strong> A playit.gg page opened. Sign in or continue as a guest, then press Approve. This page updates by itself.</span></div>
       <div class="tunnel-actions">
         <button class="btn btn-secondary btn-sm" onclick="mchost.playitOpenClaim()"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Open approval page</button>
         <button class="btn btn-ghost btn-sm" onclick="playitCancel()">Cancel</button>
@@ -1720,7 +1720,7 @@ function renderPlayit(s) {
       </div>`;
   } else {
     html = `
-      <p class="method-desc" style="margin-top: 0;">DIY MC Hosting downloads the official, signed playit agent, opens playit.gg for you to approve, then creates the Minecraft tunnel. The tunnel runs only while DIY MC Hosting is open.</p>
+      <p class="method-desc" style="margin-top: 0;">SpareBlok downloads the official, signed playit agent, opens playit.gg for you to approve, then creates the Minecraft tunnel. The tunnel runs only while SpareBlok is open.</p>
       <div class="tunnel-actions"><button class="btn btn-primary" onclick="playitSetup()"><i class="fas fa-route" aria-hidden="true"></i> Set up playit</button></div>`;
   }
   panel.innerHTML = html;
@@ -1756,7 +1756,7 @@ async function playitDisable() {
 
 async function playitUnlink() {
   const ok = await confirmDialog('Unlink playit account?',
-    'The tunnel stops and DIY MC Hosting forgets its playit key. Your tunnel stays in your playit account, so linking again later gives the same address.',
+    'The tunnel stops and SpareBlok forgets its playit key. Your tunnel stays in your playit account, so linking again later gives the same address.',
     'Unlink', true);
   if (!ok) return;
   await mchost.playitUnlink();
@@ -1786,7 +1786,7 @@ async function openSetupWizard() {
     `<option value="${k}" ${k === recType ? 'selected' : ''}>${label}${k === recType ? ' (recommended)' : ''}</option>`).join('');
 
   const result = await showModal({
-    title: '<i class="fas fa-cube" aria-hidden="true"></i> Welcome to DIY MC Hosting',
+    title: '<i class="fas fa-cube" aria-hidden="true"></i> Welcome to SpareBlok',
     wide: true,
     body: `
       <p>Let's set up a Minecraft server tuned for this PC. Everything (server files and Java) is downloaded automatically.</p>
@@ -1912,7 +1912,7 @@ async function requestClose() {
     ],
   });
   if (choice === 'tray') {
-    showToast('DIY MC Hosting is still running in the system tray', 'info');
+    showToast('SpareBlok is still running in the system tray', 'info');
     mchost.hideToTray();
   } else if (choice === 'quit') {
     showToast('Stopping the server and exiting...', 'info');
