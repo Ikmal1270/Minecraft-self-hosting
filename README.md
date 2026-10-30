@@ -48,6 +48,29 @@
 
 **You need:** 64-bit Windows 10 or 11. The lightest profile, Potato PC, is aimed at a dual-core CPU with 4 GB of RAM. Nothing else needs to be installed first.
 
+### Or use the one-click installer
+
+No release to download, or you'd rather build it yourself from the code? You don't need any coding knowledge:
+
+1. **[Download the ZIP](https://github.com/Ikmal1270/Minecraft-self-hosting/archive/refs/heads/main.zip)**.
+2. **Right-click it and choose Extract All.**
+3. **Open the extracted folder and double-click `Install.bat`.** If Windows warns you, choose **More info → Run anyway**.
+
+It builds the app, installs it, and opens it for you, usually within a few minutes depending on your internet speed. It needs about 4 GB of free space while it works. Afterward you can delete the extracted folder, and the app stays installed.
+
+<details>
+<summary><strong>What Install.bat does</strong></summary>
+<br>
+
+1. Checks your PC, and uses Node.js if you already have version 20 or newer. If not, it downloads a private copy from `nodejs.org` into the extracted folder and checks its SHA-256 hash. Nothing is installed system-wide.
+2. Downloads the app's build tools from npm and GitHub.
+3. Builds the installer into `dist\`.
+4. Runs the installer silently for your Windows user only, with no admin rights, then opens the app. Your existing servers and worlds are kept.
+
+You can read the whole script in [`scripts/install.ps1`](scripts/install.ps1).
+
+</details>
+
 ## Why use it
 
 - **It tells you how many players your PC can handle.** You get an estimate from your real hardware, and it shows which limit you'll hit first.
@@ -214,6 +237,8 @@ Everything is in `%APPDATA%\mchost\`. The folder keeps the app's original name (
 
 ## Build from source
 
+This section is for developers. If you just want to use the app, see the [one-click installer](#or-use-the-one-click-installer).
+
 You'll need [Node.js](https://nodejs.org/) and Windows.
 
 ```bash
@@ -225,6 +250,7 @@ To build the `.exe` files into `dist/`:
 
 ```bash
 npm run build            # installer and portable .exe
+npm run build:installer  # installer .exe only
 npm run build:portable   # portable .exe only
 npm run build:dir        # unpacked folder, fastest for testing
 ```
@@ -235,6 +261,7 @@ To regenerate the icon, run `npm run icon` (it writes `assets/icon.png` and `ass
 <summary><strong>Project layout</strong></summary>
 
 ```
+Install.bat        One-click build and install for non-developers
 main.js            Electron main process: window, tray, IPC wiring
 preload.js         Safe bridge exposing window.mchost to the UI
 src/
@@ -252,7 +279,7 @@ src/
   playit.js        playit.gg tunnel: agent download, account linking, tunnel creation
   net.js, util.js  HTTP and process helpers
 renderer/          UI (HTML/CSS/JS) + bundled Font Awesome
-scripts/           Icon generator
+scripts/           Install script and icon generator
 assets/            App icon
 docs/screenshots/  Images used in this README
 ```
