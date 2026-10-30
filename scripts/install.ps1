@@ -8,6 +8,7 @@ $NodeVersion = '24.22.2'
 $NodeSha256 = 'ca1bff5d8ead13c9f2ea404a176db46bd430704d5b5113734049fa365e7799e2'
 $MinNodeMajor = 20
 $MinFreeGB = 4
+$LegacyAppName = 'DIY MC Hosting By M.N.Ikmal' # still running if upgrading from before the rename
 $MaxRootLength = 110 # Node.js and node_modules add up to ~135 characters; Windows stops at 260
 
 trap { Stop-WithError $_.Exception.Message }
@@ -15,7 +16,7 @@ trap { Stop-WithError $_.Exception.Message }
 $root = Split-Path -Parent $PSScriptRoot
 $package = Get-Content -LiteralPath (Join-Path $root 'package.json') -Raw | ConvertFrom-Json
 $appName = $package.build.productName
-$setupExe = Join-Path $root "dist\DIY-MC-Hosting-Setup-$($package.version).exe"
+$setupExe = Join-Path $root "dist\SpareBlok-Setup-$($package.version).exe"
 $shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) "$($package.build.nsis.shortcutName).lnk"
 
 function Write-Step($number, $text) {
@@ -34,7 +35,7 @@ function Stop-WithError($text) {
 }
 
 function Wait-ForAppToClose {
-  while (Get-Process -Name $appName -ErrorAction SilentlyContinue) {
+  while (Get-Process -Name $appName, $LegacyAppName -ErrorAction SilentlyContinue) {
     Write-Host ''
     Write-Host " $appName is open. Stop your server and close the app, including from the system tray." -ForegroundColor Yellow
     Read-Host ' Press Enter when it is closed' | Out-Null
@@ -78,7 +79,7 @@ if (-not [Environment]::Is64BitOperatingSystem) {
   Stop-WithError 'This app needs 64-bit Windows.'
 }
 if ($root.Length -gt $MaxRootLength) {
-  Stop-WithError 'This folder is buried too deep for Windows to handle. Move it somewhere short, like C:\DIY-MC-Hosting, and run Install.bat from there.'
+  Stop-WithError 'This folder is buried too deep for Windows to handle. Move it somewhere short, like C:\SpareBlok, and run Install.bat from there.'
 }
 $freeGB = [math]::Round((Get-PSDrive -Name $root.Substring(0, 1)).Free / 1GB, 1)
 if ($freeGB -lt $MinFreeGB) {

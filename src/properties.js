@@ -1,4 +1,4 @@
-// Reads/writes server.properties while preserving keys DIY MC Hosting doesn't manage
+// Reads/writes server.properties while preserving keys SpareBlok doesn't manage
 // (so edits made by the server or the user in a text editor survive).
 const fs = require('fs');
 const path = require('path');
@@ -77,7 +77,7 @@ function writeProperties(serverDir, cfg) {
   const map = readProperties(file);
   for (const [k, v] of Object.entries(managedProperties(cfg))) map.set(k, v);
 
-  const lines = ['#Minecraft server properties', '#Managed by DIY MC Hosting - edit settings in the app'];
+  const lines = ['#Minecraft server properties', '#Managed by SpareBlok - edit settings in the app'];
   for (const [k, v] of map) {
     lines.push(k === 'level-type' ? null : `${k}=${escapeValue(v)}`);
   }

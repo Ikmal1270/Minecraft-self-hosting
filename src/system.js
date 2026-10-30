@@ -142,13 +142,13 @@ async function getPublicIp() {
   return null;
 }
 
-const FIREWALL_RULE = 'DIY MC Hosting Minecraft Server';
-const LEGACY_FIREWALL_RULE = 'MCHost Minecraft Server'; // rules created before the rename still count
+const FIREWALL_RULE = 'SpareBlok Minecraft Server';
+const LEGACY_FIREWALL_RULES = ['MCHost Minecraft Server', 'DIY MC Hosting Minecraft Server']; // rules created before the renames still count
 
 async function getFirewallStatus(port) {
   if (process.platform !== 'win32') return { supported: false };
   const res = await runPowerShell(
-    `Get-NetFirewallRule -DisplayName '${FIREWALL_RULE}*','${LEGACY_FIREWALL_RULE}*' -ErrorAction SilentlyContinue | ` +
+    `Get-NetFirewallRule -DisplayName ${[FIREWALL_RULE, ...LEGACY_FIREWALL_RULES].map((r) => `'${r}*'`).join(',')} -ErrorAction SilentlyContinue | ` +
     `Get-NetFirewallPortFilter | Select-Object -ExpandProperty LocalPort`, 15000);
   const ports = res.stdout.split(/\s+/).filter(Boolean);
   return { supported: true, allowed: ports.includes(String(port)) };

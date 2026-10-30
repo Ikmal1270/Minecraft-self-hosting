@@ -99,7 +99,7 @@ async function getGateway() {
   throw new Error('No UPnP router found. Enable UPnP in your router settings, or forward the port manually.');
 }
 
-async function openPort(port, description = 'DIY MC Hosting Minecraft') {
+async function openPort(port, description = 'SpareBlok Minecraft') {
   const gw = await getGateway();
   const internal = await localAddressFor(gw.host);
   for (const proto of ['TCP', 'UDP']) {

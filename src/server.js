@@ -98,8 +98,8 @@ class ServerManager extends EventEmitter {
       '#By changing the setting below to TRUE you are indicating your agreement to the EULA (https://aka.ms/MinecraftEULA).\neula=true\n');
 
     const args = this.buildArgs(cfg);
-    this.log(`[DIY MC Hosting] Starting ${cfg.installedType || cfg.serverType} ${cfg.installedVersion || cfg.mcVersion} with ${cfg.maxRam} RAM`);
-    this.log(`[DIY MC Hosting] ${javaPath} ${args.join(' ')}`);
+    this.log(`[SpareBlok] Starting ${cfg.installedType || cfg.serverType} ${cfg.installedVersion || cfg.mcVersion} with ${cfg.maxRam} RAM`);
+    this.log(`[SpareBlok] ${javaPath} ${args.join(' ')}`);
 
     try {
       this.proc = spawn(javaPath, args, { cwd: dir, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
@@ -122,7 +122,7 @@ class ServerManager extends EventEmitter {
     this.proc.stdin.on('error', () => { /* process already gone */ });
 
     this.proc.on('error', (err) => {
-      this.log(`[DIY MC Hosting] Failed to launch Java: ${err.message}`);
+      this.log(`[SpareBlok] Failed to launch Java: ${err.message}`);
     });
     this.proc.on('close', (code) => this.handleExit(code));
 
@@ -192,7 +192,7 @@ class ServerManager extends EventEmitter {
     this.players.clear();
     this.emit('players', []);
     this.procStats = { cpuPercent: 0, memBytes: 0 };
-    this.log(`[DIY MC Hosting] Server stopped (exit code ${code})`);
+    this.log(`[SpareBlok] Server stopped (exit code ${code})`);
 
     const crashed = !wasRequested && code !== 0;
     this.setState('offline', { code, crashed });
@@ -203,11 +203,11 @@ class ServerManager extends EventEmitter {
       this.crashTimes = this.crashTimes.filter((t) => now - t < 10 * 60 * 1000);
       this.crashTimes.push(now);
       if (uptime < 30000 && this.crashTimes.length >= 2) {
-        this.log('[DIY MC Hosting] Server crashed right after starting - not restarting. Check the log above for the error.');
+        this.log('[SpareBlok] Server crashed right after starting - not restarting. Check the log above for the error.');
       } else if (this.crashTimes.length > 3) {
-        this.log('[DIY MC Hosting] Server crashed 3 times in 10 minutes - auto-restart paused.');
+        this.log('[SpareBlok] Server crashed 3 times in 10 minutes - auto-restart paused.');
       } else {
-        this.log('[DIY MC Hosting] Server crashed. Restarting in 10 seconds...');
+        this.log('[SpareBlok] Server crashed. Restarting in 10 seconds...');
         this.restartTimer = setTimeout(() => {
           this.restartTimer = null;
           this.emit('auto-restart');
@@ -232,7 +232,7 @@ class ServerManager extends EventEmitter {
     const proc = this.proc;
     return new Promise((resolve) => {
       const timer = setTimeout(() => {
-        this.log('[DIY MC Hosting] Server did not stop in time - forcing shutdown.');
+        this.log('[SpareBlok] Server did not stop in time - forcing shutdown.');
         proc.kill();
       }, timeoutMs);
       proc.once('close', () => {

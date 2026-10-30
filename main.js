@@ -287,9 +287,9 @@ async function ensureJava(mcVersion, serverType) {
   const picked = java.pickJava(installs, required, serverType);
   if (picked) return picked.path;
 
-  server.log(`[DIY MC Hosting] Minecraft ${mcVersion} needs Java ${required}. Downloading a portable Java runtime...`);
+  server.log(`[SpareBlok] Minecraft ${mcVersion} needs Java ${required}. Downloading a portable Java runtime...`);
   const downloaded = await java.downloadJava(config.runtimesDir, required, progress('java'));
-  server.log(`[DIY MC Hosting] Java ${downloaded.version} ready.`);
+  server.log(`[SpareBlok] Java ${downloaded.version} ready.`);
   return downloaded.path;
 }
 
@@ -312,8 +312,8 @@ async function startServer() {
   const result = server.start(config.get(), javaPath);
   if (result.success && cfg.upnp) {
     upnp.openPort(cfg.port)
-      .then((r) => server.log(`[DIY MC Hosting] UPnP: port ${cfg.port} forwarded to ${r.internal}${r.externalIp ? ` (public IP ${r.externalIp})` : ''}`))
-      .catch((e) => server.log(`[DIY MC Hosting] UPnP failed: ${e.message}`));
+      .then((r) => server.log(`[SpareBlok] UPnP: port ${cfg.port} forwarded to ${r.internal}${r.externalIp ? ` (public IP ${r.externalIp})` : ''}`))
+      .catch((e) => server.log(`[SpareBlok] UPnP failed: ${e.message}`));
   }
   return result;
 }
@@ -354,7 +354,7 @@ async function backupNow(label = 'manual') {
       exclude: launch?.kind === 'jar' && !launch.file.includes('/') ? [launch.file] : [],
     });
     send('task-progress', { id: 'backup', label: 'Backup complete', done: true });
-    server.log(`[DIY MC Hosting] Backup created: ${result.name}`);
+    server.log(`[SpareBlok] Backup created: ${result.name}`);
     return result;
   } catch (err) {
     send('task-progress', { id: 'backup', label: 'Backup failed', done: true, error: err.message });
@@ -370,7 +370,7 @@ function scheduleAutoBackup() {
   const minutes = config.get().autoBackupMinutes;
   if (!minutes) return;
   autoBackupTimer = setInterval(() => {
-    if (server.state === 'online') backupNow('auto').catch((e) => server.log(`[DIY MC Hosting] Auto-backup failed: ${e.message}`));
+    if (server.state === 'online') backupNow('auto').catch((e) => server.log(`[SpareBlok] Auto-backup failed: ${e.message}`));
   }, minutes * 60 * 1000);
 }
 
@@ -448,7 +448,7 @@ handle('install-server', ({ type, version }) => runTask('install', `Installing $
   if (server.running) throw new Error('Stop the server before changing the server software');
   const cfg = config.get();
   const javaPath = ['forge', 'neoforge'].includes(type) ? await ensureJava(version, type) : null;
-  server.log(`[DIY MC Hosting] Installing ${loaders.LOADERS[type].label} ${version}...`);
+  server.log(`[SpareBlok] Installing ${loaders.LOADERS[type].label} ${version}...`);
   const result = await loaders.install({
     type,
     mcVersion: version,
@@ -469,7 +469,7 @@ handle('install-server', ({ type, version }) => runTask('install', `Installing $
   });
   // Fetch Java now (in the background of this task) so the first start is instant.
   if (!javaPath) await ensureJava(version, type).catch(() => {});
-  server.log(`[DIY MC Hosting] ${loaders.LOADERS[type].label} ${version}${result.loaderVersion ? ` (loader ${result.loaderVersion})` : ''} installed.`);
+  server.log(`[SpareBlok] ${loaders.LOADERS[type].label} ${version}${result.loaderVersion ? ` (loader ${result.loaderVersion})` : ''} installed.`);
   return { success: true, ...result };
 }));
 handle('download-java', () => runTask('java', 'Downloading Java', () => ensureJava(activeVersion() || '1.21', activeType())));

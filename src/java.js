@@ -43,11 +43,11 @@ function findJavaExe(root, depth = 3) {
 async function detectJava(runtimesDir) {
   const candidates = new Map(); // path -> source
 
-  // Runtimes DIY MC Hosting downloaded itself.
+  // Runtimes SpareBlok downloaded itself.
   if (fs.existsSync(runtimesDir)) {
     for (const d of fs.readdirSync(runtimesDir)) {
       const exe = findJavaExe(path.join(runtimesDir, d), 2);
-      if (exe) candidates.set(exe, `DIY MC Hosting (${d})`);
+      if (exe) candidates.set(exe, `SpareBlok (${d})`);
     }
   }
 
@@ -86,8 +86,8 @@ async function detectJava(runtimesDir) {
   const onPath = await probeJava('java', 'System PATH');
   if (onPath && !found.some((j) => j.version === onPath.version)) found.push(onPath);
 
-  // Newest first, DIY MC Hosting-managed runtimes win ties.
-  found.sort((a, b) => b.major - a.major || Number(b.source.startsWith('DIY MC Hosting')) - Number(a.source.startsWith('DIY MC Hosting')));
+  // Newest first, SpareBlok-managed runtimes win ties.
+  found.sort((a, b) => b.major - a.major || Number(b.source.startsWith('SpareBlok')) - Number(a.source.startsWith('SpareBlok')));
   return found;
 }
 
@@ -128,7 +128,7 @@ async function downloadJava(runtimesDir, required, onProgress) {
 
   const exe = findJavaExe(target, 2);
   if (!exe) throw new Error('Java was downloaded but java.exe was not found');
-  const probed = await probeJava(exe, `DIY MC Hosting (java-${major})`);
+  const probed = await probeJava(exe, `SpareBlok (java-${major})`);
   if (!probed) throw new Error('Downloaded Java failed to run');
   return probed;
 }
