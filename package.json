@@ -1,0 +1,78 @@
+{
+  "name": "mchost",
+  "version": "1.3.0",
+  "description": "DIY MC Hosting By M.N.Ikmal. Turn an old PC into a Minecraft server: one-click install, auto Java, performance tuning, player capacity estimates and playit.gg tunnels.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "icon": "node scripts/make-icon.js",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable",
+    "build:dir": "electron-builder --win --dir"
+  },
+  "build": {
+    "appId": "com.mchost.minecraft-server-manager",
+    "productName": "DIY MC Hosting By M.N.Ikmal",
+    "copyright": "Copyright (c) 2026 M.N.Ikmal",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DIY MC Hosting By M.N.Ikmal",
+      "artifactName": "DIY-MC-Hosting-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "DIY-MC-Hosting-Portable-${version}.${ext}"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json"
+    ]
+  },
+  "keywords": [
+    "minecraft",
+    "server",
+    "hosting",
+    "manager",
+    "paper",
+    "fabric",
+    "forge",
+    "neoforge"
+  ],
+  "author": "M.N.Ikmal",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "45.1.0",
+    "electron-builder": "26.18.0"
+  }
+}

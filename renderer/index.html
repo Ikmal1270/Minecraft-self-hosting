@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' https: data:; connect-src 'self'">
+  <title>DIY MC Hosting By M.N.Ikmal</title>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
+  <!-- Title bar -->
+  <header class="titlebar">
+    <div class="titlebar-drag">
+      <div class="titlebar-logo">
+        <img src="../assets/icon.png" alt="">
+        <span class="logo-text">DIY MC Hosting</span>
+        <span class="logo-author">by M.N.Ikmal</span>
+        <span class="logo-version" id="appVersion"></span>
+      </div>
+    </div>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn" onclick="mchost.minimize()" aria-label="Minimize"><i class="fas fa-minus" aria-hidden="true"></i></button>
+      <button class="titlebar-btn" onclick="mchost.maximize()" aria-label="Maximize"><i class="far fa-square" aria-hidden="true"></i></button>
+      <button class="titlebar-btn close" onclick="requestClose()" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <nav class="sidebar" aria-label="Main">
+      <div class="server-identity">
+        <div class="server-avatar"><img src="../assets/icon.png" alt=""></div>
+        <div class="server-info">
+          <div class="server-name" id="sidebarServerName">My Server</div>
+          <div class="server-status" id="sidebarStatus">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span class="status-text">Offline</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <button class="nav-item" data-page="dashboard" aria-current="page" onclick="navigateTo('dashboard')"><i class="fas fa-house" aria-hidden="true"></i><span>Dashboard</span></button>
+        <button class="nav-item" data-page="performance" onclick="navigateTo('performance')"><i class="fas fa-gauge-high" aria-hidden="true"></i><span>Performance</span></button>
+        <button class="nav-item" data-page="properties" onclick="navigateTo('properties')"><i class="fas fa-sliders" aria-hidden="true"></i><span>Server Properties</span></button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Server</div>
+        <button class="nav-item" data-page="modloader" onclick="navigateTo('modloader')"><i class="fas fa-layer-group" aria-hidden="true"></i><span>Mod Loader</span></button>
+        <button class="nav-item" data-page="mods" onclick="navigateTo('mods')"><i class="fas fa-puzzle-piece" aria-hidden="true"></i><span id="navModsLabel">Mods &amp; Plugins</span><span class="nav-badge" id="navModsCount"></span></button>
+        <button class="nav-item" data-page="console" onclick="navigateTo('console')"><i class="fas fa-terminal" aria-hidden="true"></i><span>Console</span></button>
+        <button class="nav-item" data-page="players" onclick="navigateTo('players')"><i class="fas fa-user-group" aria-hidden="true"></i><span>Players</span><span class="nav-badge" id="navPlayersCount"></span></button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Manage</div>
+        <button class="nav-item" data-page="network" onclick="navigateTo('network')"><i class="fas fa-share-nodes" aria-hidden="true"></i><span>Network</span></button>
+        <button class="nav-item" data-page="worlds" onclick="navigateTo('worlds')"><i class="fas fa-earth-americas" aria-hidden="true"></i><span>Worlds</span></button>
+        <button class="nav-item" data-page="backups" onclick="navigateTo('backups')"><i class="fas fa-box-archive" aria-hidden="true"></i><span>Backups</span></button>
+        <button class="nav-item" data-page="files" onclick="navigateTo('files')"><i class="fas fa-folder-open" aria-hidden="true"></i><span>Files</span></button>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="java-status" id="javaStatus"><i class="fab fa-java" aria-hidden="true"></i><span>Checking Java...</span></div>
+        <span class="theme-label" id="themeLabel">Theme</span>
+        <div class="segmented" role="group" aria-labelledby="themeLabel" id="themeSwitch">
+          <button data-theme="system" onclick="setTheme('system')">System</button>
+          <button data-theme="dark" onclick="setTheme('dark')">Dark</button>
+          <button data-theme="light" onclick="setTheme('light')">Light</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="content" id="content" tabindex="-1">
+
+      <!-- ==================== DASHBOARD ==================== -->
+      <section class="page active" id="page-dashboard" aria-labelledby="h-dashboard">
+        <h1 class="sr-only" id="h-dashboard">Dashboard</h1>
+
+        <div class="notice-bar hidden" id="setupNotice">
+          <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
+          <div><strong>No server installed yet.</strong> <span>Quick setup picks the best software and settings for this PC.</span></div>
+          <button class="btn btn-primary btn-sm" onclick="openSetupWizard()">Quick setup</button>
+        </div>
+
+        <div class="notice-bar warning hidden" id="restartNotice" role="status">
+          <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+          <div><strong>The server crashed.</strong> <span>Restarting in a few seconds.</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="cancelRestart()">Cancel restart</button>
+        </div>
+
+        <div class="status-hero" id="statusHero" data-state="offline">
+          <div class="hero-main">
+            <div class="hero-identity">
+              <span class="state-badge"><span class="status-dot" aria-hidden="true"></span><span id="heroStateText">Offline</span></span>
+              <h2 class="hero-name" id="heroName">My Minecraft Server</h2>
+              <p class="hero-sub" id="heroSub">Not installed</p>
+            </div>
+
+            <div class="join-box">
+              <div class="join-label"><span>Join address</span><span id="joinSource"></span></div>
+              <div class="join-row">
+                <code class="join-address" id="joinAddress">Detecting...</code>
+                <button class="icon-btn" id="joinCopyBtn" onclick="copyText(document.getElementById('joinAddress').textContent)" aria-label="Copy join address"><i class="far fa-copy" aria-hidden="true"></i></button>
+              </div>
+              <p class="join-hint" id="joinHint"></p>
+            </div>
+
+            <div class="hero-actions">
+              <button class="icon-btn" id="restartBtn" onclick="restartServer()" aria-label="Restart server" title="Restart"><i class="fas fa-rotate-right" aria-hidden="true"></i></button>
+              <button class="icon-btn danger" id="killBtn" onclick="killServer()" aria-label="Force stop server" title="Force stop" disabled><i class="fas fa-power-off" aria-hidden="true"></i></button>
+              <button class="btn btn-primary btn-lg" id="startStopBtn" onclick="toggleServer()"><i class="fas fa-play" aria-hidden="true"></i> Start server</button>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric-label"><i class="fas fa-microchip" aria-hidden="true"></i> CPU</div>
+              <div class="metric-value" id="metricCpu">--</div>
+              <div class="metric-detail" id="metricCpuDetail">system --</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label"><i class="fas fa-memory" aria-hidden="true"></i> Memory</div>
+              <div class="metric-value" id="metricRam">--</div>
+              <div class="metric-detail" id="metricRamDetail">--</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label"><i class="fas fa-user-group" aria-hidden="true"></i> Players</div>
+              <div class="metric-value" id="metricPlayers">0 / 0</div>
+              <div class="metric-detail" id="metricPlayersDetail">--</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label"><i class="far fa-clock" aria-hidden="true"></i> Uptime</div>
+              <div class="metric-value" id="metricUptime">--</div>
+              <div class="metric-detail" id="metricUptimeDetail">server offline</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label"><i class="fas fa-hard-drive" aria-hidden="true"></i> Disk free</div>
+              <div class="metric-value" id="metricDisk">--</div>
+              <div class="metric-detail" id="metricDiskDetail">--</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-split">
+          <div class="panel">
+            <div class="panel-header">
+              <h2><i class="fas fa-chart-line" aria-hidden="true"></i> Live performance</h2>
+              <div class="chart-legend">
+                <span class="legend-item"><span class="legend-swatch" style="background: var(--chart-cpu)"></span>CPU <strong id="legendCpu">--</strong></span>
+                <span class="legend-item"><span class="legend-swatch" style="background: var(--chart-ram)"></span>Memory <strong id="legendRam">--</strong></span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <canvas id="perfChart" class="perf-chart" role="img" aria-label="CPU and memory usage over the last 3 minutes"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2><i class="fas fa-circle online-icon" aria-hidden="true"></i> Online now <span class="count-pill" id="dashPlayersCount">0</span></h2>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('players')">Manage</button>
+            </div>
+            <div class="mini-players" id="dashPlayers"><div class="list-empty">Server is offline</div></div>
+          </div>
+        </div>
+
+        <div class="grid-split">
+          <div class="panel">
+            <div class="panel-header">
+              <h2><i class="fas fa-terminal" aria-hidden="true"></i> Recent console</h2>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('console')">Open console</button>
+            </div>
+            <div class="console-preview" id="dashConsole">
+              <div class="console-empty"><i class="fas fa-terminal" aria-hidden="true"></i><p>Server output appears here once it starts</p></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2><i class="fas fa-users-viewfinder" aria-hidden="true"></i> Player capacity</h2>
+              <button class="btn btn-ghost btn-sm" onclick="navigateTo('performance')">Tune</button>
+            </div>
+            <div class="panel-body">
+              <div class="capacity-display">
+                <div class="capacity-figure">
+                  <div class="capacity-number" id="capacityNumber">--</div>
+                  <div class="capacity-label">players recommended</div>
+                </div>
+                <div>
+                  <p class="capacity-note"><span id="capRam">--</span> RAM, <span id="capType">--</span>, <span id="capMods">0 mods</span></p>
+                  <div class="limit-bars compact" id="dashLimitBars"></div>
+                  <p class="setting-hint">Limited by <strong id="capBottleneck">--</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== PERFORMANCE ==================== -->
+      <section class="page" id="page-performance" aria-labelledby="h-performance">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-performance">Performance</h1>
+            <p class="page-subtitle">Tune the server for this PC and see how many players it can handle.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="autoOptimize()"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Auto-optimize</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-desktop" aria-hidden="true"></i> This PC</h2>
+            <button class="btn btn-ghost btn-sm" onclick="refreshSystemInfo()"><i class="fas fa-rotate" aria-hidden="true"></i> Refresh</button>
+          </div>
+          <div class="hardware-grid">
+            <div class="hardware-card">
+              <div class="hw-icon"><i class="fas fa-microchip" aria-hidden="true"></i></div>
+              <div class="hw-info">
+                <span class="hw-label">Processor</span>
+                <span class="hw-value" id="perfCpuModel">Loading...</span>
+                <span class="hw-detail" id="perfCpuCores">--</span>
+              </div>
+              <div class="hw-score" title="Single-core speed. A Ryzen 5 5600X scores about 100."><span id="perfCpuScore">--</span><small>score</small></div>
+            </div>
+            <div class="hardware-card">
+              <div class="hw-icon"><i class="fas fa-memory" aria-hidden="true"></i></div>
+              <div class="hw-info">
+                <span class="hw-label">Memory</span>
+                <span class="hw-value" id="perfRamTotal">Loading...</span>
+                <span class="hw-detail" id="perfRamAvail">--</span>
+              </div>
+              <div class="hw-bar"><div class="hw-bar-fill" id="ramBarFill"></div></div>
+            </div>
+            <div class="hardware-card">
+              <div class="hw-icon"><i class="fas fa-hard-drive" aria-hidden="true"></i></div>
+              <div class="hw-info">
+                <span class="hw-label">Server drive</span>
+                <span class="hw-value" id="perfDiskTotal">Loading...</span>
+                <span class="hw-detail" id="perfDiskFree">--</span>
+              </div>
+              <div class="hw-bar"><div class="hw-bar-fill" id="diskBarFill"></div></div>
+            </div>
+            <div class="hardware-card">
+              <div class="hw-icon"><i class="fab fa-java" aria-hidden="true"></i></div>
+              <div class="hw-info">
+                <span class="hw-label">Java</span>
+                <span class="hw-value" id="perfJavaVersion">Checking...</span>
+                <span class="hw-detail" id="perfJavaPath">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="perf-layout">
+          <div>
+            <div class="panel">
+              <div class="panel-header">
+                <h2><i class="fas fa-bolt" aria-hidden="true"></i> Profile</h2>
+                <span class="panel-hint">Sets view and simulation distance</span>
+              </div>
+              <div class="panel-body">
+                <div class="choice-grid cols-4" id="profileGrid">
+                  <button class="choice" data-profile="potato" onclick="applyProfile('potato')">
+                    <span class="choice-title"><i class="fas fa-seedling" aria-hidden="true"></i> Potato PC</span>
+                    <span class="choice-desc">Dual core, 4 GB</span>
+                    <span class="choice-meta">View 6, sim 4</span>
+                  </button>
+                  <button class="choice" data-profile="balanced" onclick="applyProfile('balanced')">
+                    <span class="choice-title"><i class="fas fa-scale-balanced" aria-hidden="true"></i> Balanced</span>
+                    <span class="choice-desc">Typical old desktop</span>
+                    <span class="choice-meta">View 8, sim 6</span>
+                  </button>
+                  <button class="choice" data-profile="performance" onclick="applyProfile('performance')">
+                    <span class="choice-title"><i class="fas fa-gauge-high" aria-hidden="true"></i> Performance</span>
+                    <span class="choice-desc">Quad core, 8 GB+</span>
+                    <span class="choice-meta">View 10, sim 8</span>
+                  </button>
+                  <button class="choice" data-profile="high" onclick="applyProfile('high')">
+                    <span class="choice-title"><i class="fas fa-mountain" aria-hidden="true"></i> High end</span>
+                    <span class="choice-desc">Modern CPU, 16 GB+</span>
+                    <span class="choice-meta">View 12, sim 10</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header"><h2><i class="fas fa-memory" aria-hidden="true"></i> Memory</h2></div>
+              <div class="panel-body">
+                <div class="ram-slider-group">
+                  <label class="setting-label" for="maxRamSlider">Maximum RAM</label>
+                  <div class="slider-with-value">
+                    <input type="range" class="range-slider" id="maxRamSlider" min="1" max="16" step="0.5" value="2" aria-describedby="maxRamHint">
+                    <output class="slider-value" id="maxRamValue" for="maxRamSlider">2 GB</output>
+                  </div>
+                  <p class="setting-hint" id="maxRamHint">Leave at least 2 GB for Windows.</p>
+                </div>
+                <div class="ram-slider-group">
+                  <label class="setting-label" for="minRamSlider">Starting RAM</label>
+                  <div class="slider-with-value">
+                    <input type="range" class="range-slider" id="minRamSlider" min="0.5" max="16" step="0.5" value="1" aria-describedby="minRamHint">
+                    <output class="slider-value" id="minRamValue" for="minRamSlider">1 GB</output>
+                  </div>
+                  <p class="setting-hint" id="minRamHint">Reserved when the server starts. Never more than the maximum.</p>
+                </div>
+                <div class="ram-visual" aria-hidden="true">
+                  <div class="ram-bar-container">
+                    <div class="ram-bar-segment system" id="ramBarSystem">Windows</div>
+                    <div class="ram-bar-segment allocated" id="ramBarAllocated">Server</div>
+                    <div class="ram-bar-segment free" id="ramBarFree">Free</div>
+                  </div>
+                  <div class="ram-bar-labels">
+                    <span id="ramLabelSystem">Windows and apps: --</span>
+                    <span id="ramLabelAllocated">Server: --</span>
+                    <span id="ramLabelFree">Free: --</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header"><h2><i class="fas fa-border-all" aria-hidden="true"></i> World load</h2></div>
+              <div class="panel-body">
+                <div class="ram-slider-group">
+                  <label class="setting-label" for="viewDistSlider">View distance</label>
+                  <div class="slider-with-value">
+                    <input type="range" class="range-slider" id="viewDistSlider" min="3" max="32" step="1" value="8" aria-describedby="viewDistHint">
+                    <output class="slider-value" id="viewDistValue" for="viewDistSlider">8</output>
+                  </div>
+                  <p class="setting-hint" id="viewDistHint">How many chunks players can see. Costs the most RAM and upload bandwidth.</p>
+                </div>
+                <div class="ram-slider-group">
+                  <label class="setting-label" for="simDistSlider">Simulation distance</label>
+                  <div class="slider-with-value">
+                    <input type="range" class="range-slider" id="simDistSlider" min="3" max="32" step="1" value="6" aria-describedby="simDistHint">
+                    <output class="slider-value" id="simDistValue" for="simDistSlider">6</output>
+                  </div>
+                  <p class="setting-hint" id="simDistHint">How far mobs, crops and redstone keep running. The biggest CPU cost.</p>
+                </div>
+                <div class="properties-grid">
+                  <div class="form-group">
+                    <label class="setting-label" for="processPriority">Process priority</label>
+                    <select class="form-select" id="processPriority">
+                      <option value="low">Below normal (PC stays responsive)</option>
+                      <option value="normal">Normal</option>
+                      <option value="above">Above normal (dedicated PC)</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="setting-label" for="uploadMbps">Upload speed (Mbps)</label>
+                    <input type="number" class="form-input" id="uploadMbps" min="0" max="10000" step="1" placeholder="e.g. 20" aria-describedby="uploadHint">
+                    <p class="setting-hint" id="uploadHint">Optional. Adds a network limit to the estimate.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header"><h2><i class="fas fa-code" aria-hidden="true"></i> Java flags</h2></div>
+              <div class="panel-body">
+                <div class="preset-buttons" id="jvmPresetButtons" role="group" aria-label="Java flag preset">
+                  <button class="preset-btn" data-preset="lowend" onclick="setJvmPreset('lowend')">Low-end</button>
+                  <button class="preset-btn" data-preset="default" onclick="setJvmPreset('default')">Default</button>
+                  <button class="preset-btn" data-preset="aikar" onclick="setJvmPreset('aikar')">Aikar's flags</button>
+                  <button class="preset-btn" data-preset="custom" onclick="setJvmPreset('custom')">Custom</button>
+                </div>
+                <p class="setting-hint" id="jvmPresetHint" style="margin: 8px 0 12px;"></p>
+                <label class="sr-only" for="jvmArgs">Java arguments</label>
+                <textarea class="form-textarea monospace" id="jvmArgs" rows="3" spellcheck="false"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="sticky-panel">
+            <div class="panel">
+              <div class="panel-header"><h2><i class="fas fa-users-viewfinder" aria-hidden="true"></i> How many players?</h2></div>
+              <div class="panel-body">
+                <div class="calc-result" aria-live="polite">
+                  <span class="calc-big-number" id="perfRecommended">--</span>
+                  <span class="calc-big-label">players recommended</span>
+                  <div class="calc-result-sub">Up to <strong id="perfMax">--</strong> before lag. Limited by <strong id="perfBottleneck">--</strong>.</div>
+                </div>
+                <div class="limit-bars" id="perfLimitBars"></div>
+                <div class="breakdown-list" id="perfBreakdown"></div>
+                <div class="tips-list" id="perfTips"></div>
+                <button class="btn btn-secondary full-width" onclick="applyRecommendedPlayers()"><i class="fas fa-user-check" aria-hidden="true"></i> Use <span id="perfApplyPlayers">--</span> slots</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="savePerformanceSettings()"><i class="fas fa-check" aria-hidden="true"></i> Save changes</button>
+          <button class="btn btn-ghost" onclick="updatePerformancePage()">Discard</button>
+          <span class="unsaved-hint hidden" id="perfUnsaved" role="status"><i class="fas fa-circle" aria-hidden="true"></i> Unsaved changes. Applied on next server start.</span>
+        </div>
+      </section>
+
+      <!-- ==================== SERVER PROPERTIES ==================== -->
+      <section class="page" id="page-properties" aria-labelledby="h-properties">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-properties">Server properties</h1>
+            <p class="page-subtitle">Gameplay settings, written to server.properties each time the server starts.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2><i class="fas fa-id-card" aria-hidden="true"></i> Identity</h2></div>
+          <div class="panel-body">
+            <div class="properties-grid">
+              <div class="form-group span-2">
+                <label class="setting-label" for="propServerName">Server name</label>
+                <input type="text" class="form-input" id="propServerName" maxlength="40">
+              </div>
+              <div class="form-group span-2">
+                <label class="setting-label" for="propMotd">Server list message (MOTD)</label>
+                <input type="text" class="form-input" id="propMotd" maxlength="256" aria-describedby="motdHint motdFit">
+                <div class="motd-preview" id="motdPreview" aria-label="Server list preview"></div>
+                <p class="setting-hint" id="motdHint">Use &amp; color codes, for example &amp;aGreen or &amp;lBold.</p>
+                <p class="setting-hint warn-text hidden" id="motdFit"></p>
+              </div>
+              <div class="form-group span-2">
+                <span class="setting-label">Join message</span>
+                <div class="join-message-preview">
+                  <i class="fas fa-comment-dots" aria-hidden="true"></i>
+                  <span id="joinMessagePreview"></span>
+                </div>
+                <p class="setting-hint">Every player sees this in chat, privately, a moment after they join.</p>
+              </div>
+              <div class="form-group">
+                <label class="setting-label" for="propPort">Port</label>
+                <input type="number" class="form-input" id="propPort" min="1024" max="65535" inputmode="numeric">
+              </div>
+              <div class="form-group">
+                <label class="setting-label" for="propMaxPlayers">Player slots</label>
+                <div class="input-with-icon">
+                  <i class="fas fa-user-group" aria-hidden="true"></i>
+                  <input type="number" class="form-input" id="propMaxPlayers" min="1" max="1000" inputmode="numeric" aria-describedby="propMaxPlayersHint">
+                </div>
+                <p class="setting-hint" id="propMaxPlayersHint"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2><i class="fas fa-gamepad" aria-hidden="true"></i> Gameplay</h2></div>
+          <div class="panel-body">
+            <div class="properties-grid">
+              <div class="form-group">
+                <label class="setting-label" for="propGamemode">Game mode</label>
+                <select class="form-select" id="propGamemode">
+                  <option value="survival">Survival</option>
+                  <option value="creative">Creative</option>
+                  <option value="adventure">Adventure</option>
+                  <option value="spectator">Spectator</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="setting-label" for="propDifficulty">Difficulty</label>
+                <select class="form-select" id="propDifficulty">
+                  <option value="peaceful">Peaceful</option>
+                  <option value="easy">Easy</option>
+                  <option value="normal">Normal</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="setting-label" for="propSpawnProtection">Spawn protection (blocks)</label>
+                <input type="number" class="form-input" id="propSpawnProtection" min="0" max="256" aria-describedby="spawnHint">
+                <p class="setting-hint" id="spawnHint">Only operators can build this close to spawn.</p>
+              </div>
+              <div class="form-group">
+                <span class="setting-label">View and simulation distance</span>
+                <button class="btn btn-secondary" onclick="navigateTo('performance')"><i class="fas fa-gauge-high" aria-hidden="true"></i> <span id="propDistanceSummary">Set on Performance</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2><i class="fas fa-toggle-on" aria-hidden="true"></i> Rules</h2></div>
+          <div class="toggles-grid" id="togglesGrid"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2><i class="fas fa-mountain-sun" aria-hidden="true"></i> New world generation</h2></div>
+          <div class="panel-body">
+            <div class="properties-grid">
+              <div class="form-group">
+                <label class="setting-label" for="propLevelType">World type</label>
+                <select class="form-select" id="propLevelType">
+                  <option value="default">Default</option>
+                  <option value="flat">Superflat</option>
+                  <option value="largeBiomes">Large biomes</option>
+                  <option value="amplified">Amplified (heavy on CPU)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="setting-label" for="propSeed">Seed</label>
+                <input type="text" class="form-input" id="propSeed" placeholder="Random">
+              </div>
+              <div class="form-group span-2">
+                <label class="setting-label" for="propResourcePack">Resource pack URL</label>
+                <input type="url" class="form-input" id="propResourcePack" placeholder="https://example.com/pack.zip">
+              </div>
+            </div>
+            <p class="setting-hint" style="margin-top: 12px;">Seed and world type only apply to a newly generated world (Worlds, then Regenerate).</p>
+          </div>
+        </div>
+
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="saveProperties()"><i class="fas fa-check" aria-hidden="true"></i> Save changes</button>
+          <button class="btn btn-ghost" onclick="updatePropertiesPage()">Discard</button>
+        </div>
+      </section>
+
+      <!-- ==================== MOD LOADER ==================== -->
+      <section class="page" id="page-modloader" aria-labelledby="h-modloader">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-modloader">Mod loader</h1>
+            <p class="page-subtitle">Pick server software and a Minecraft version. Java is handled for you.</p>
+          </div>
+        </div>
+
+        <div class="installed-card" id="installedCard">
+          <div class="installed-icon"><i class="fas fa-cube" aria-hidden="true"></i></div>
+          <div class="installed-info">
+            <span class="installed-label">Installed</span>
+            <span class="installed-value" id="installedValue">Nothing yet</span>
+            <span class="installed-detail" id="installedDetail">Choose software and a version below.</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2><i class="fas fa-server" aria-hidden="true"></i> Choose software</h2></div>
+          <div class="panel-body">
+            <div class="server-type-grid" role="group" aria-label="Server software">
+              <button class="server-type-card" data-type="paper" onclick="selectServerType('paper')">
+                <span class="type-icon paper-icon"><i class="fas fa-paper-plane" aria-hidden="true"></i></span>
+                <h4>Paper <span class="tag good installed-flag hidden">Installed</span></h4>
+                <p>Much faster than Vanilla. Runs Bukkit and Spigot plugins.</p>
+                <span class="type-features"><span class="feature-tag good">Best for old PCs</span><span class="feature-tag">Plugins</span></span>
+              </button>
+              <button class="server-type-card" data-type="purpur" onclick="selectServerType('purpur')">
+                <span class="type-icon purpur-icon"><i class="fas fa-gem" aria-hidden="true"></i></span>
+                <h4>Purpur <span class="tag good installed-flag hidden">Installed</span></h4>
+                <p>Paper with extra gameplay options.</p>
+                <span class="type-features"><span class="feature-tag">Plugins</span><span class="feature-tag">Configurable</span></span>
+              </button>
+              <button class="server-type-card" data-type="vanilla" onclick="selectServerType('vanilla')">
+                <span class="type-icon vanilla-icon"><i class="fas fa-cube" aria-hidden="true"></i></span>
+                <h4>Vanilla <span class="tag good installed-flag hidden">Installed</span></h4>
+                <p>The official server from Mojang. No mods or plugins.</p>
+                <span class="type-features"><span class="feature-tag">Official</span></span>
+              </button>
+              <button class="server-type-card" data-type="fabric" onclick="selectServerType('fabric')">
+                <span class="type-icon fabric-icon"><i class="fas fa-scroll" aria-hidden="true"></i></span>
+                <h4>Fabric <span class="tag good installed-flag hidden">Installed</span></h4>
+                <p>Lightweight mod loader with strong performance mods.</p>
+                <span class="type-features"><span class="feature-tag">Mods</span><span class="feature-tag">Lightweight</span></span>
+              </button>
+              <button class="server-type-card" data-type="forge" onclick="selectServerType('forge')">
+                <span class="type-icon forge-icon"><i class="fas fa-hammer" aria-hidden="true"></i></span>
+                <h4>Forge <span class="tag good installed-flag hidden">Installed</span></h4>
+                <p>The classic loader for large modpacks.</p>
+                <span class="type-features"><span class="feature-tag">Mods</span><span class="feature-tag">Modpacks</span></span>
+              </button>
+              <button class="server-type-card" data-type="neoforge" onclick="selectServerType('neoforge')">
+                <span class="type-icon neoforge-icon"><i class="fas fa-fire" aria-hidden="true"></i></span>
+                <h4>NeoForge <span class="tag good installed-flag hidden">Installed</span></h4>
+                <p>Modern Forge successor for 1.20.2 and newer.</p>
+                <span class="type-features"><span class="feature-tag">Mods</span><span class="feature-tag">Modern</span></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-code-branch" aria-hidden="true"></i> Choose version</h2>
+            <span class="panel-hint" id="versionHint"></span>
+          </div>
+          <div class="panel-body">
+            <label class="sr-only" for="mcVersionSelect">Minecraft version</label>
+            <div class="version-selector">
+              <select class="form-select large" id="mcVersionSelect" aria-describedby="installHint"><option value="">Loading versions...</option></select>
+              <button class="btn btn-primary btn-lg" id="installBtn" onclick="installServer()"><i class="fas fa-download" aria-hidden="true"></i> Install</button>
+            </div>
+            <p class="setting-hint" id="installHint" style="margin-top: 8px;"></p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header"><h2><i class="fas fa-folder" aria-hidden="true"></i> Server folder</h2></div>
+            <div class="panel-body">
+              <label class="sr-only" for="serverDirInput">Server folder</label>
+              <div class="directory-selector">
+                <input type="text" class="form-input" id="serverDirInput" readonly>
+                <button class="btn btn-secondary" onclick="chooseServerDirectory()">Change</button>
+                <button class="icon-btn" onclick="mchost.openDirectory()" aria-label="Open server folder"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></button>
+              </div>
+              <p class="setting-hint" style="margin-top: 8px;">Use your fastest drive (SSD) with the most free space.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h2><i class="fab fa-java" aria-hidden="true"></i> Java</h2>
+              <button class="btn btn-ghost btn-sm" onclick="refreshJava()"><i class="fas fa-rotate" aria-hidden="true"></i> Rescan</button>
+            </div>
+            <div class="panel-body">
+              <label class="sr-only" for="javaSelect">Java to use</label>
+              <select class="form-select" id="javaSelect" onchange="saveJavaChoice()" aria-describedby="javaHint"></select>
+              <p class="setting-hint" id="javaHint" style="margin-top: 8px;">Automatic picks or downloads the Java your Minecraft version needs.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== MODS & PLUGINS ==================== -->
+      <section class="page" id="page-mods" aria-labelledby="modsTitle">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="modsTitle">Mods and plugins</h1>
+            <p class="page-subtitle" id="modsSubtitle">Install from Modrinth or add your own .jar files.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openModsFolder()"><i class="fas fa-folder-open" aria-hidden="true"></i> Open folder</button>
+            <button class="btn btn-secondary btn-sm" onclick="addModFiles()"><i class="fas fa-plus" aria-hidden="true"></i> Add files</button>
+          </div>
+        </div>
+
+        <div class="notice-bar hidden" id="modsVanillaNotice">
+          <i class="fas fa-circle-info" aria-hidden="true"></i>
+          <div><strong>Vanilla can't load mods or plugins.</strong> <span>Switch to Paper or Purpur for plugins, or Fabric, Forge or NeoForge for mods.</span></div>
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('modloader')">Change software</button>
+        </div>
+
+        <div id="modsContent">
+          <div class="panel" id="recommendedPanel">
+            <div class="panel-header">
+              <h2><i class="fas fa-bolt" aria-hidden="true"></i> Recommended for old PCs</h2>
+              <button class="btn btn-primary btn-sm" onclick="installRecommended()"><i class="fas fa-download" aria-hidden="true"></i> Install all</button>
+            </div>
+            <div class="panel-body"><div class="recommended-list" id="recommendedList"></div></div>
+          </div>
+
+          <div class="mods-layout">
+            <div class="panel">
+              <div class="panel-header"><h2><i class="fas fa-box-open" aria-hidden="true"></i> Installed <span class="count-pill" id="modsInstalledCount">0</span></h2></div>
+              <div class="mod-list" id="modList" aria-label="Installed files. Drop .jar files here to add them."></div>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><h2><i class="fas fa-magnifying-glass" aria-hidden="true"></i> Browse Modrinth</h2></div>
+              <div class="panel-body">
+                <form class="search-bar" onsubmit="event.preventDefault(); searchMods();" role="search">
+                  <label class="sr-only" for="modSearchInput">Search Modrinth</label>
+                  <input type="search" class="form-input" id="modSearchInput" placeholder="Search">
+                  <button class="btn btn-primary" type="submit">Search</button>
+                </form>
+                <div class="search-results" id="modSearchResults" aria-live="polite">
+                  <div class="file-empty"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><p>Search by name, or press Search to see the most popular for your version.</p></div>
+                </div>
+                <div class="search-more hidden" id="modSearchMore"><button class="btn btn-ghost btn-sm" onclick="searchMods(true)">Load more</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== CONSOLE ==================== -->
+      <section class="page" id="page-console" aria-labelledby="h-console">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-console">Console</h1>
+            <p class="page-subtitle">Live server log. Commands run as the server, no slash needed.</p>
+          </div>
+          <div class="header-actions">
+            <label class="inline-check"><input type="checkbox" id="consoleAutoScroll" checked> Follow output</label>
+            <button class="btn btn-ghost btn-sm" onclick="clearConsole()"><i class="fas fa-eraser" aria-hidden="true"></i> Clear</button>
+          </div>
+        </div>
+
+        <div class="quick-commands" role="group" aria-label="Quick commands">
+          <button class="chip" onclick="quickCommand('list')"><i class="fas fa-list" aria-hidden="true"></i> list</button>
+          <button class="chip" onclick="quickCommand('save-all')"><i class="fas fa-floppy-disk" aria-hidden="true"></i> save-all</button>
+          <button class="chip" onclick="quickCommand('time set day')"><i class="fas fa-sun" aria-hidden="true"></i> time set day</button>
+          <button class="chip" onclick="quickCommand('weather clear')"><i class="fas fa-cloud-sun" aria-hidden="true"></i> weather clear</button>
+          <button class="chip" onclick="promptCommand('say ', 'Message to all players')"><i class="fas fa-bullhorn" aria-hidden="true"></i> say</button>
+          <button class="chip" onclick="quickCommand('tps')" title="Paper and Purpur only"><i class="fas fa-heart-pulse" aria-hidden="true"></i> tps</button>
+        </div>
+
+        <div class="panel console-panel">
+          <div class="console-output" id="consoleOutput" role="log" aria-live="off" tabindex="0" aria-label="Server log">
+            <div class="console-empty"><i class="fas fa-terminal" aria-hidden="true"></i><p>Start the server to see its output</p></div>
+          </div>
+          <form class="console-input-bar" onsubmit="event.preventDefault(); sendConsoleCommand();">
+            <span class="console-prompt" aria-hidden="true">&gt;</span>
+            <label class="sr-only" for="consoleInput">Command</label>
+            <input type="text" class="console-input" id="consoleInput" placeholder="Type a command. Up and down arrows recall history." onkeydown="handleConsoleKey(event)" autocomplete="off" spellcheck="false">
+            <button class="btn btn-primary btn-sm" type="submit">Send</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ==================== PLAYERS ==================== -->
+      <section class="page" id="page-players" aria-labelledby="h-players">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-players">Players</h1>
+            <p class="page-subtitle">Who's online, operators, whitelist and bans.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" onclick="refreshPlayers(true)"><i class="fas fa-rotate" aria-hidden="true"></i> Refresh</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-body">
+            <form class="search-bar" onsubmit="event.preventDefault(); playerAction('whitelist add');">
+              <label class="sr-only" for="playerNameInput">Player name</label>
+              <input type="text" class="form-input" id="playerNameInput" placeholder="Player name" maxlength="16" autocomplete="off" aria-describedby="playerHint">
+              <button class="btn btn-secondary" type="submit"><i class="fas fa-user-plus" aria-hidden="true"></i> Whitelist</button>
+              <button class="btn btn-secondary" type="button" onclick="playerAction('op')"><i class="fas fa-crown" aria-hidden="true"></i> Make op</button>
+              <button class="btn btn-ghost" type="button" onclick="playerAction('pardon')">Unban</button>
+              <button class="btn btn-danger-ghost" type="button" onclick="playerAction('ban')"><i class="fas fa-ban" aria-hidden="true"></i> Ban</button>
+            </form>
+            <p class="setting-hint" id="playerHint" style="margin-top: 8px;">The server must be running to change these lists.</p>
+          </div>
+        </div>
+
+        <div class="players-grid">
+          <div class="panel">
+            <div class="panel-header"><h2><i class="fas fa-circle online-icon" aria-hidden="true"></i> Online <span class="count-pill" id="onlineCount">0</span></h2></div>
+            <div class="player-list" id="onlinePlayers"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2><i class="fas fa-crown" aria-hidden="true"></i> Operators <span class="count-pill" id="opsCount">0</span></h2></div>
+            <div class="player-list" id="opsList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <h2><i class="fas fa-clipboard-list" aria-hidden="true"></i> Whitelist <span class="count-pill" id="whitelistCount">0</span></h2>
+              <span class="panel-hint" id="whitelistState"></span>
+            </div>
+            <div class="player-list" id="whitelistList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h2><i class="fas fa-ban" aria-hidden="true"></i> Banned <span class="count-pill" id="bannedCount">0</span></h2></div>
+            <div class="player-list" id="bannedList"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-chart-bar" aria-hidden="true"></i> Capacity by RAM</h2>
+            <span class="panel-hint">This PC, current settings</span>
+          </div>
+          <div class="panel-body">
+            <div class="capacity-analysis">
+              <div class="tier-list" id="ramTiers"></div>
+              <div>
+                <div class="analysis-card">
+                  <h4>How to read this</h4>
+                  <ul>
+                    <li>The bar shows how many players the RAM alone could hold.</li>
+                    <li>The number is the real limit after CPU, disk and network.</li>
+                    <li>Your current allocation is highlighted.</li>
+                  </ul>
+                </div>
+                <div class="analysis-card">
+                  <h4>Disk space guide</h4>
+                  <ul>
+                    <li>Vanilla or Paper: 1 to 5 GB of world data.</li>
+                    <li>Modded: 5 to 20 GB with mods and world.</li>
+                    <li>Each zipped backup is about half the world size.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== NETWORK ==================== -->
+      <section class="page" id="page-network" aria-labelledby="h-network">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-network">Network</h1>
+            <p class="page-subtitle">Choose how friends join. Same Wi-Fi works right away. For the internet, playit.gg is the easiest.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" onclick="refreshNetwork()"><i class="fas fa-rotate" aria-hidden="true"></i> Refresh</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <!-- playit.gg -->
+          <div class="method recommended" id="playitMethod">
+            <div class="method-icon"><i class="fas fa-route" aria-hidden="true"></i></div>
+            <div>
+              <h2 class="method-title">Internet with playit.gg <span class="tag good">Recommended</span> <span class="tag">Free</span></h2>
+              <p class="method-desc">A secure tunnel gives you a public address. No router setup, and it works even when your internet provider blocks port forwarding (CGNAT, mobile or 5G broadband).</p>
+
+              <ol class="steps" id="playitSteps" aria-label="Setup progress">
+                <li class="step" data-step="install"><span class="step-mark" aria-hidden="true">1</span>Install agent</li>
+                <li class="step" data-step="link"><span class="step-mark" aria-hidden="true">2</span>Link account</li>
+                <li class="step" data-step="tunnel"><span class="step-mark" aria-hidden="true">3</span>Create tunnel</li>
+              </ol>
+
+              <div class="tunnel-panel" id="playitPanel" aria-live="polite"></div>
+            </div>
+            <div class="method-side"></div>
+          </div>
+
+          <!-- LAN -->
+          <div class="method">
+            <div class="method-icon"><i class="fas fa-house-signal" aria-hidden="true"></i></div>
+            <div>
+              <h2 class="method-title">Same Wi-Fi or LAN <span class="tag good" id="lanReady">Ready</span></h2>
+              <p class="method-desc">Players on your home network add one of these in Multiplayer, then Add Server.</p>
+              <div id="lanAddresses" style="margin-top: 10px;"></div>
+            </div>
+            <div class="method-side"></div>
+          </div>
+        </div>
+
+        <!-- Port forwarding (advanced) -->
+        <details class="panel advanced" id="advancedNetwork">
+          <summary>
+            <span class="method-icon"><i class="fas fa-network-wired" aria-hidden="true"></i></span>
+            <span>
+              <span class="method-title" style="font-size: var(--text-md); font-weight: 600;">Port forwarding</span>
+              <span class="method-desc" style="display: block;">Advanced. Uses your own public IP. Needs router access and a provider without CGNAT.</span>
+            </span>
+            <i class="fas fa-chevron-right chev" aria-hidden="true"></i>
+          </summary>
+          <div class="advanced-body">
+            <div>
+              <h3 class="setting-label" style="margin-bottom: 6px;">Your public address</h3>
+              <div class="connect-row">
+                <span class="connect-label">Public IP</span>
+                <code class="connect-address" id="publicAddress">Detecting...</code>
+                <button class="icon-btn" onclick="copyText(document.getElementById('publicAddress').textContent)" aria-label="Copy public address"><i class="far fa-copy" aria-hidden="true"></i></button>
+              </div>
+              <p class="setting-hint" id="cgnatHint"></p>
+            </div>
+
+            <div class="checklist">
+              <div class="check-item" id="checkFirewall">
+                <div class="check-icon"><i class="fas fa-shield-halved" aria-hidden="true"></i></div>
+                <div class="check-info">
+                  <span class="check-title">Windows Firewall</span>
+                  <span class="check-desc" id="firewallDesc">Checking...</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="firewallBtn" onclick="addFirewallRule()">Allow port</button>
+              </div>
+              <div class="check-item" id="checkUpnp">
+                <div class="check-icon"><i class="fas fa-tower-broadcast" aria-hidden="true"></i></div>
+                <div class="check-info">
+                  <span class="check-title" id="upnpLabel">Automatic router forwarding (UPnP)</span>
+                  <span class="check-desc" id="upnpDesc">Asks your router to forward the port. UPnP must be enabled on the router.</span>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="upnpToggle" onchange="toggleUpnp()" aria-labelledby="upnpLabel" aria-describedby="upnpDesc">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="setting-label" style="margin-bottom: 6px;">Forward the port by hand</h3>
+              <ol class="guide-list">
+                <li>Open your router page (often <code>192.168.0.1</code> or <code>192.168.1.1</code>) and sign in.</li>
+                <li>Find Port Forwarding, Virtual Server or NAT.</li>
+                <li>Forward port <code id="guidePort">25565</code> (TCP and UDP) to <code id="guideLocalIp">this PC</code>.</li>
+                <li>Compare the router's WAN IP with your public IP above. If they differ, your provider uses CGNAT and forwarding won't work. Use playit.gg instead.</li>
+              </ol>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- ==================== WORLDS ==================== -->
+      <section class="page" id="page-worlds" aria-labelledby="h-worlds">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-worlds">Worlds</h1>
+            <p class="page-subtitle">Switch, import, regenerate or delete worlds. Stop the server first.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" onclick="refreshWorlds()"><i class="fas fa-rotate" aria-hidden="true"></i> Refresh</button>
+            <button class="btn btn-secondary btn-sm" onclick="importWorld()"><i class="fas fa-file-import" aria-hidden="true"></i> Import</button>
+            <button class="btn btn-danger-ghost btn-sm" onclick="resetWorld()"><i class="fas fa-arrows-rotate" aria-hidden="true"></i> Regenerate</button>
+          </div>
+        </div>
+        <div class="panel"><div class="world-list" id="worldList"></div></div>
+      </section>
+
+      <!-- ==================== BACKUPS ==================== -->
+      <section class="page" id="page-backups" aria-labelledby="h-backups">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-backups">Backups</h1>
+            <p class="page-subtitle">Zipped snapshots of worlds, configs, mods and plugins. Safe to take while the server runs.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openBackupsFolder()"><i class="fas fa-folder-open" aria-hidden="true"></i> Open folder</button>
+            <button class="btn btn-primary" onclick="createBackup()"><i class="fas fa-plus" aria-hidden="true"></i> Back up now</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h2><i class="far fa-clock" aria-hidden="true"></i> Schedule</h2></div>
+          <div class="panel-body">
+            <div class="properties-grid">
+              <div class="form-group">
+                <label class="setting-label" for="autoBackupSelect">Back up while running</label>
+                <select class="form-select" id="autoBackupSelect" onchange="saveBackupSettings()">
+                  <option value="0">Off</option>
+                  <option value="30">Every 30 minutes</option>
+                  <option value="60">Every hour</option>
+                  <option value="180">Every 3 hours</option>
+                  <option value="360">Every 6 hours</option>
+                  <option value="1440">Every day</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="setting-label" for="maxBackupsSelect">Keep</label>
+                <select class="form-select" id="maxBackupsSelect" onchange="saveBackupSettings()" aria-describedby="keepHint">
+                  <option value="2">Newest 2</option>
+                  <option value="3">Newest 3</option>
+                  <option value="5">Newest 5</option>
+                  <option value="10">Newest 10</option>
+                  <option value="20">Newest 20</option>
+                </select>
+                <p class="setting-hint" id="keepHint">Older backups are deleted automatically to save space.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2><i class="fas fa-box-archive" aria-hidden="true"></i> Saved backups <span class="count-pill" id="backupCount">0</span></h2>
+            <span class="panel-hint" id="backupTotalSize"></span>
+          </div>
+          <div class="backup-list" id="backupList"></div>
+        </div>
+      </section>
+
+      <!-- ==================== FILES ==================== -->
+      <section class="page" id="page-files" aria-labelledby="h-files">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title" id="h-files">Files</h1>
+            <p class="page-subtitle">Browse the server folder and edit config files.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" onclick="mchost.openDirectory()"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Open in Explorer</button>
+            <button class="btn btn-ghost btn-sm" onclick="refreshFiles()"><i class="fas fa-rotate" aria-hidden="true"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="panel">
+          <nav class="file-breadcrumb" id="fileBreadcrumb" aria-label="Folder path"></nav>
+          <div class="file-list" id="fileList"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Background task -->
+  <div class="task-card hidden" id="taskCard" role="status" aria-live="polite">
+    <div class="task-head">
+      <div class="loading-spinner small" aria-hidden="true"></div>
+      <span class="task-label" id="taskLabel">Working...</span>
+      <span class="task-percent" id="taskPercent"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="taskFill"></div></div>
+  </div>
+
+  <dialog class="modal" id="modal" aria-labelledby="modalTitle"></dialog>
+
+  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
